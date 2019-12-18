@@ -1,0 +1,23 @@
+# Verify that gopls sends diagnostics for all packages when
+# changes are made to different packages in quick succession.
+# This is largely created in response to:
+#
+#   https://github.com/golang/go/issues/36144
+
+vim ex 'e a/a.go'
+vim ex 'sp b/b.go'
+errlogmatch -start 'PublishDiagnostics callback: &protocol.PublishDiagnosticsParams{\n\S+:\s+URI:\s+"file://'$WORK/a/a.go
+errlogmatch -start 'PublishDiagnostics callback: &protocol.PublishDiagnosticsParams{\n\S+:\s+URI:\s+"file://'$WORK/b/b.go
+
+-- go.mod --
+module mod.com
+
+-- a/a.go --
+package a
+
+//
+-- b/b.go --
+package b
+
+//
+
