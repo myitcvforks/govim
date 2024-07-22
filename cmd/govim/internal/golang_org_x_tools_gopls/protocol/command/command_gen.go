@@ -34,6 +34,7 @@ const (
 	DiagnoseFiles           Command = "gopls.diagnose_files"
 	Doc                     Command = "gopls.doc"
 	EditGoDirective         Command = "gopls.edit_go_directive"
+	ExtractToNewFile        Command = "gopls.extract_to_new_file"
 	FetchVulncheckResult    Command = "gopls.fetch_vulncheck_result"
 	FreeSymbols             Command = "gopls.free_symbols"
 	GCDetails               Command = "gopls.gc_details"
@@ -43,6 +44,8 @@ const (
 	ListKnownPackages       Command = "gopls.list_known_packages"
 	MaybePromptForTelemetry Command = "gopls.maybe_prompt_for_telemetry"
 	MemStats                Command = "gopls.mem_stats"
+	Modules                 Command = "gopls.modules"
+	Packages                Command = "gopls.packages"
 	RegenerateCgo           Command = "gopls.regenerate_cgo"
 	RemoveDependency        Command = "gopls.remove_dependency"
 	ResetGoModDiagnostics   Command = "gopls.reset_go_mod_diagnostics"
@@ -74,6 +77,7 @@ var Commands = []Command{
 	DiagnoseFiles,
 	Doc,
 	EditGoDirective,
+	ExtractToNewFile,
 	FetchVulncheckResult,
 	FreeSymbols,
 	GCDetails,
@@ -83,6 +87,8 @@ var Commands = []Command{
 	ListKnownPackages,
 	MaybePromptForTelemetry,
 	MemStats,
+	Modules,
+	Packages,
 	RegenerateCgo,
 	RemoveDependency,
 	ResetGoModDiagnostics,
@@ -167,6 +173,12 @@ func Dispatch(ctx context.Context, params *protocol.ExecuteCommandParams, s Inte
 			return nil, err
 		}
 		return nil, s.EditGoDirective(ctx, a0)
+	case ExtractToNewFile:
+		var a0 protocol.Location
+		if err := UnmarshalArgs(params.Arguments, &a0); err != nil {
+			return nil, err
+		}
+		return nil, s.ExtractToNewFile(ctx, a0)
 	case FetchVulncheckResult:
 		var a0 URIArg
 		if err := UnmarshalArgs(params.Arguments, &a0); err != nil {
@@ -214,6 +226,18 @@ func Dispatch(ctx context.Context, params *protocol.ExecuteCommandParams, s Inte
 		return nil, s.MaybePromptForTelemetry(ctx)
 	case MemStats:
 		return s.MemStats(ctx)
+	case Modules:
+		var a0 ModulesArgs
+		if err := UnmarshalArgs(params.Arguments, &a0); err != nil {
+			return nil, err
+		}
+		return s.Modules(ctx, a0)
+	case Packages:
+		var a0 PackagesArgs
+		if err := UnmarshalArgs(params.Arguments, &a0); err != nil {
+			return nil, err
+		}
+		return s.Packages(ctx, a0)
 	case RegenerateCgo:
 		var a0 URIArg
 		if err := UnmarshalArgs(params.Arguments, &a0); err != nil {
@@ -436,6 +460,18 @@ func NewEditGoDirectiveCommand(title string, a0 EditGoDirectiveArgs) (protocol.C
 	}, nil
 }
 
+func NewExtractToNewFileCommand(title string, a0 protocol.Location) (protocol.Command, error) {
+	args, err := MarshalArgs(a0)
+	if err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.Command{
+		Title:     title,
+		Command:   ExtractToNewFile.String(),
+		Arguments: args,
+	}, nil
+}
+
 func NewFetchVulncheckResultCommand(title string, a0 URIArg) (protocol.Command, error) {
 	args, err := MarshalArgs(a0)
 	if err != nil {
@@ -531,6 +567,30 @@ func NewMemStatsCommand(title string) (protocol.Command, error) {
 	return protocol.Command{
 		Title:   title,
 		Command: MemStats.String(),
+	}, nil
+}
+
+func NewModulesCommand(title string, a0 ModulesArgs) (protocol.Command, error) {
+	args, err := MarshalArgs(a0)
+	if err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.Command{
+		Title:     title,
+		Command:   Modules.String(),
+		Arguments: args,
+	}, nil
+}
+
+func NewPackagesCommand(title string, a0 PackagesArgs) (protocol.Command, error) {
+	args, err := MarshalArgs(a0)
+	if err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.Command{
+		Title:     title,
+		Command:   Packages.String(),
+		Arguments: args,
 	}, nil
 }
 
